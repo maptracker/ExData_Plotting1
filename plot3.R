@@ -37,9 +37,10 @@ with(data, plot(x = DateTime, y = Sub_metering_1, type = "n",
                 xlab = "Time of Day (2007, Thu Feb 1 - Fri Feb 2)"))
 
 ## Use lines() to add each individual sub meter
-with(data, lines(x = DateTime, y = Sub_metering_1, col = "black"))
-with(data, lines(x = DateTime, y = Sub_metering_2, col = "red"))
-with(data, lines(x = DateTime, y = Sub_metering_3, col = "blue"))
+with(data, {
+    lines(x = DateTime, y = Sub_metering_1, col = "black")
+    lines(x = DateTime, y = Sub_metering_2, col = "red")
+    lines(x = DateTime, y = Sub_metering_3, col = "blue") } )
 
 ## Manually add a legend
 legend("topright", col = subMeterColors, lty = 1,
