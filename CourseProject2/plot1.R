@@ -1,5 +1,10 @@
+## Coursera assignment
+## https://www.coursera.org/learn/exploratory-data-analysis/peer/b5Ecl/course-project-2
 
-
+Question <- 1
+## Have total emissions from PM2.5 decreased in the Baltimore City,
+## Maryland (fips == "24510") from 1999 to 2008? Use the base plotting
+## system to make a plot answering this question.
 
 NEI <- readRDS("summarySCC_PM25.rds")
 SCC <- readRDS("Source_Classification_Code.rds")
@@ -30,5 +35,6 @@ plot(x = TotalByYear$Year, y = TotalByYear$PM2.5 / 1000, type = 'b',
      xlab = "NEI Year Reported", ylab = "PM2.5 (kilotons)",
      main = "PM2.5 decreases over reported time frame")
 
-savePlot("plot1.png")
+savePlot(sprintf("plot%d.png",Question))
+
 
