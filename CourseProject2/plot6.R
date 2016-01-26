@@ -46,19 +46,25 @@ yearType$City <- ifelse(yearType$fips == "24510", "Baltimore", "Los Angeles")
 ## Start by extracting our reference year data
 emis1999 <- yearType[ yearType$year == 1999, c("City", "Emissions", "Type")]
 
+## Now take out 1999, since it is going to be all zeros anyway:
+yearType <- yearType[ yearType$year != 1999, ]
+
 ## There's probably a more R-ish way to do this. R tends to be
-## column-centric, tand this is a row-centric operation, so I am going
-## to fall back to a loop:
+## column-centric, and this is a row-centric operation, so I am going
+## to fall back to my comfort zone: a loop
 nRows <- nrow(yearType)
 normExp <- vector("numeric", length = nRows)
 for ( i in 1:nRows) {
-    normExp[i] <- 100 * yearType[ i, "Emissions" ] /
-        emis1999[emis1999$City == yearType[ i, "City" ] &
-                 emis1999$Type == yearType[ i, "Type" ] , "Emissions" ]
+    ## This is the relevant value from 1999:
+    e1999 <- emis1999[emis1999$City == yearType[ i, "City" ] &
+                      emis1999$Type == yearType[ i, "Type" ] , "Emissions" ]
+    ## This is percent change from 1999:
+    normExp[i] <- (100 * yearType[ i, "Emissions" ] / e1999) - 100
 }
-yearType$Normalized <- normExp
+yearType$PercentChange <- normExp
 
-## Let's order the type by decreasing emissions for baltimore
+## Let's order the type by decreasing emissions for baltimore in 2008:
+
 lastYear <- yearType[ yearType$year == 2008 & yearType$fips == "24510" , ]
 eord <- order( lastYear$Emissions, decreasing = TRUE )
 lvls <- lastYear[ eord, "Type"]
@@ -68,11 +74,24 @@ yearType$Type <- factor(yearType$Type, levels = lvls)
 ## Plot
 
 library(ggplot2)
-p <- ggplot( data = yearType, aes(year, Normalized)) +
-    # scale_y_log10() +
-    labs( x = "Year", y = "Emissions (100 = 1999 levels)",
-         title = "Baltimore & LA vehicle emissions") + 
-    geom_line( aes(color = Type, linetype = City))
+
+## Initially did a line graph:
+#p <- ggplot( data = yearType, aes(year, PercentChange)) +
+#    # scale_y_log10() +
+#    labs( x = "Year", y = "Emissions (Percent change from 1999)",
+#         title = "Baltimore & LA vehicle emissions") + 
+#    geom_line( aes(color = Type, linetype = City))
+
+## But a heat map would less cluttered
+## https://learnr.wordpress.com/2010/01/26/ggplot2-quick-heatmap-plotting/
+p <- ggplot(data = yearType, aes(as.factor(year), Type))  +
+    geom_tile(aes(fill = PercentChange), colour = "white") +
+    scale_fill_gradient2(low = "blue", mid = "white", high = "red",
+                         limits = c(-100,200),
+                         guide = guide_legend(title = "%Change\nfrom 1999")) +
+    facet_grid(. ~ City) +
+    labs( x = "Year", y = "Vehicle Type",
+         title = "Baltimore shows consistent emissions decrease\nLos Angeles shows little") 
 
 p
 
